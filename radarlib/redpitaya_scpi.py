@@ -1,5 +1,6 @@
 """SCPI access to Red Pitaya."""
 
+from lib2to3.pgen2.token import RPAR
 import socket
 
 __author__ = "Luka Golinar, Iztok Jeras"
@@ -129,8 +130,8 @@ class scpi (object):
 
     def err_c(self):
         """Error count."""
-        return rp.txrx_txt('SYST:ERR:COUN?')
+        return RPAR.txrx_txt('SYST:ERR:COUN?')
 
     def err_c(self):
         """Error next."""
-        return rp.txrx_txt('SYST:ERR:NEXT?')
+        return RPAR.txrx_txt('SYST:ERR:NEXT?')
