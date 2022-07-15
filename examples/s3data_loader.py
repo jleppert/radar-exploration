@@ -4,19 +4,6 @@ import os
 import h5py as h5
 import re
 
-
-#s3 = boto3.client('s3', aws_access_key_id='AKIA2UYKQHP63X5PQCMP', aws_secret_access_key='Exae5tQaotHCuUj3s+cPZi3qE/0CGIK4GPoU+RWS')
-#bucket = 'gpr-scan-data'
-#file = '0-0.hdf5' #replace with desired file
-#container = '2022-07-13T19:21:48.201056/raw/' #leave empty is file is loose in bucket
-#dirPath = os.path.join(os.getcwd(), file)
-
-
-#data_set = h5.File(file ,'r')
-
-#if(os.path.exists(dirPath) != True):
- #   s3.download_file(bucket, container+file, dirPath)
-
 class GPRDataHelper:
     awsAccessKey = ''
     awsSecretKey = ''
@@ -117,8 +104,8 @@ class GPRDataHelper:
         
         return procList #returns list of matching file names
 
-    def getRawDataByLine(self, scanID, lineNumber): #get all raw files that match the line number in the given scan folder
-                                                    #and return them as a list of htf5 datasets
+    #get all raw files that match the line number in the given scan folder and return them as a list of htf5 datasets
+    def getRawDataByLine(self, scanID, lineNumber): 
         rawList = self.findRaw(scanID, lineNumber)
         data_set = []
         
@@ -127,8 +114,9 @@ class GPRDataHelper:
             data_set.append(h5.File(os.path.join(os.getcwd(), item), 'r')) #addes downloaded file to data_set list in htf5 format
         return data_set
 
-    def getProcessedDataAll(self, scanID): #get all processed files in the given scan folder
-                                                    #and return them as a list of htf5 datasets
+
+    #get all processed files in the given scan folder and return them as a list of htf5 datasets
+    def getProcessedDataAll(self, scanID): 
         procList = self.findProcessed(scanID)
         data_set = []
         
