@@ -104,6 +104,38 @@ class GPRDataHelper:
         
         return procList #returns list of matching file names
 
+    #writes all raw data files to one larger htf5 file
+    def writeRawData(self, scanID):
+        regex = r"(\d+)-(\d+).hdf5"
+        rawList = []
+
+        hFile = h5.File('allRaw.hdf5', 'a')
+
+        listR = self.listRaw(scanID)
+        test_str = ""
+
+        for item in listR: #reformats list from listRaw() to something regex can use
+            test_str += item + '\n'
+
+        matches = re.finditer(regex, test_str, re.MULTILINE)
+
+        for matchNum, match in enumerate(matches, start=1):
+            rawList.append(match.group())
+
+        for file in rawList:
+            nameInt = re.findall(r'\b\d+\b', file)
+            line = nameInt[0]
+            sweep = nameInt[1]
+            name = '/sweep-' + str(nameInt[1])
+
+            self.getRaw(scanID, line, sweep)
+            hFile.create_dataset(('/line-' + str(line) + name), data= self.getRaw(scanID, line, sweep))
+
+        return hFile
+
+
+
+
     #get all raw files that match the line number in the given scan folder and return them as a list of htf5 datasets
     def getRawDataByLine(self, scanID, lineNumber): 
         rawList = self.findRaw(scanID, lineNumber)
