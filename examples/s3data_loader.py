@@ -3,6 +3,7 @@ import botocore
 import os
 import h5py as h5
 import re
+import numpy as np
 
 class GPRDataHelper:
     awsAccessKey = ''
@@ -26,7 +27,16 @@ class GPRDataHelper:
 
         fileName = str(lineNumber) + '-' + str(sweepNumber) + '.hdf5' #create the file name using provided parameters 
         self.download(scanID, 'raw', fileName) #call download method
-        return(h5.File(os.path.join(os.getcwd(), fileName), 'r')) #returns the downloaded file in hdf5 format
+        f = h5.File(os.path.join(os.getcwd(), fileName), 'r') #get this file
+        dataset = f['sweep_data_raw']
+        attrDict = {}   #get all attributes
+        for key, value in dataset.attrs.items():
+            attrDict[key] = value
+
+        f = np.array(f, dtype=h5.special_dtype(vlen=str)) #convert dataset to ndarray after pulling attributes
+        rList = [f, attrDict] #r
+        #print(attrDict)
+        return(rList) #returns dataset ndArray and a dictionary of its attributes in a list
 
     def getProcessedData(self, scanID, lineNumber):
 
@@ -105,11 +115,12 @@ class GPRDataHelper:
         return procList #returns list of matching file names
 
     #writes all raw data files to one larger htf5 file
-    def writeRawData(self, scanID):
+    def getRawAll(self, scanID):
         regex = r"(\d+)-(\d+).hdf5"
         rawList = []
+        
 
-        hFile = h5.File('allRaw.hdf5', 'a')
+        hFile = h5.File('allRaw.hdf5', 'w')
 
         listR = self.listRaw(scanID)
         test_str = ""
@@ -122,15 +133,23 @@ class GPRDataHelper:
         for matchNum, match in enumerate(matches, start=1):
             rawList.append(match.group())
 
+
+        i = 0
         for file in rawList:
+            
             nameInt = re.findall(r'\b\d+\b', file)
             line = nameInt[0]
             sweep = nameInt[1]
             name = '/sweep-' + str(nameInt[1])
+            rawDataList = self.getRawData(scanID, line, sweep)
 
-            self.getRaw(scanID, line, sweep)
-            hFile.create_dataset(('/line-' + str(line) + name), data= self.getRaw(scanID, line, sweep))
+            #self.getRaw(scanID, line, sweep)
+            hFile.create_dataset(('/line-' + str(line) + name), data= rawDataList[0])
 
+            if i == 0:
+                for key in rawDataList[1]:
+                    hFile.attrs[key] = rawDataList[1][key]
+        #hFile.close()
         return hFile
 
 
